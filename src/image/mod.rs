@@ -1,0 +1,1 @@
+// image rendering logic will be implemented here
