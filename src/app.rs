@@ -1,13 +1,10 @@
+use crate::config::AppConfig;
 use crate::error::AppError;
 
 pub fn run() -> Result<(), AppError> {
-    // TODO: load config
-    // TODO: scrape data
-    // TODO: filter events
-    // TODO: render image
-    // TODO: publish
+    let config = AppConfig::load("config/default.yaml")?;
 
-    println!("Economic News Visual Bot started successfully.");
+    println!("Loaded config: {:?}", config);
 
     Ok(())
 }

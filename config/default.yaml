@@ -1,0 +1,11 @@
+impact:
+  - high
+  - medium
+
+currency:
+  - USD
+  - EUR
+  - GBP
+
+timezone: NY
+language: fa

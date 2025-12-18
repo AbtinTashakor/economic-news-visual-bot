@@ -4,7 +4,7 @@ mod error;
 mod models;
 mod scraper;
 mod filter;
-mod image;
+mod image; 
 mod publisher;
 
 use crate::app::run;
