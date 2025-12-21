@@ -9,8 +9,9 @@ mod publisher;
 
 use crate::app::run;
 
-fn main() {
-    if let Err(e) = run() {
+#[tokio::main]
+async fn main() {
+    if let Err(e) = run().await {
         eprintln!("Application error: {}", e);
         std::process::exit(1);
     }
