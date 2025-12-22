@@ -1,12 +1,11 @@
-use chrono::{NaiveDate, NaiveTime};
+use chrono::NaiveDate;
+use crate::models::{Impact, EventTime};
 
-use super::enums::Impact;
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EconomicEvent {
-    pub title: String,
+    pub date: NaiveDate,
+    pub time: EventTime,
     pub currency: String,
     pub impact: Impact,
-    pub date : NaiveDate,
-    pub time : NaiveTime
+    pub title: String,
 }

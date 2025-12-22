@@ -23,7 +23,7 @@ pub async fn run() -> Result<(), AppError> {
     println!("Total parsed events: {}", events.len());
 
     for e in &events {
-        println!("Event: {:<5} | {:?} | {}", e.currency, e.impact, e.title);
+        println!("Event: {:<5} | {:?} | {:?} | {}", e.currency, e.impact,e.time, e.title);
     }
 
     // 4) Apply business filters (impact/currency/...)
@@ -40,7 +40,6 @@ pub async fn run() -> Result<(), AppError> {
     // - Render image from `filtered`
     // - Publish to Telegram
     //
-
 
     Ok(())
 }

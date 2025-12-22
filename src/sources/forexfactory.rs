@@ -1,6 +1,7 @@
 use crate::error::AppError;
 use crate::models::event::EconomicEvent;
 use crate::models::Impact;
+use crate::models::EventTime;
 use chrono::{NaiveDate, NaiveTime};
 use serde::Deserialize;
 use std::{fs, process::Command};
@@ -103,7 +104,7 @@ fn calendar_state_to_events(state: CalendarState) -> Vec<EconomicEvent> {
                 continue;
             }
 
-            let time = parse_time_label(&e.timeLabel);
+            let time = parse_event_time(&e.timeLabel);
             let impact = map_impact_name(e.impactName.trim());
 
             out.push(EconomicEvent {
@@ -141,15 +142,20 @@ fn map_impact_name(name: &str) -> Impact {
 /// - "2:00am"
 /// - "All Day"
 /// - "Tentative"
-/// For non-specific times we return 00:00.
-fn parse_time_label(label: &str) -> NaiveTime {
+
+fn parse_event_time(label: &str) -> EventTime {
     let s = label.trim().to_lowercase();
 
-    if s.is_empty() || s.contains("all day") || s.contains("tentative") {
-        return NaiveTime::from_hms_opt(0, 0, 0).unwrap();
+    if s.contains("all day") {
+        return EventTime::AllDay;
     }
 
-    // Example "2:00am" -> "%I:%M%p"
-    NaiveTime::parse_from_str(&s, "%I:%M%p")
-        .unwrap_or_else(|_| NaiveTime::from_hms_opt(0, 0, 0).unwrap())
+    if s.contains("tentative") {
+        return EventTime::Tentative;
+    }
+
+    match NaiveTime::parse_from_str(&s, "%I:%M%p") {
+        Ok(t) => EventTime::Exact(t),
+        Err(_) => EventTime::Tentative,
+    }
 }
