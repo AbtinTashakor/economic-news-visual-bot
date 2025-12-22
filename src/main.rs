@@ -6,6 +6,7 @@ mod scraper;
 mod filter;
 mod image; 
 mod publisher;
+mod sources;
 
 use crate::app::run;
 

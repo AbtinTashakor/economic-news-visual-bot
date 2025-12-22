@@ -1,6 +1,7 @@
 impact:
   - high
   - medium
+  - low
 
 currency:
   - USD
