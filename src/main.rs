@@ -7,6 +7,7 @@ mod filter;
 mod image; 
 mod publisher;
 mod sources;
+mod normalize;
 
 use crate::app::run;
 

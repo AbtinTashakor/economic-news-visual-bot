@@ -2,16 +2,20 @@ use serde::Deserialize;
 use crate::error::AppError;
 use std::fs;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum TargetTimezone {
+    NY,
+    IR,
+}
 
 #[derive(Debug, Deserialize)]
 pub struct AppConfig {
     pub impact: Vec<String>,
     pub currency: Vec<String>,
-    pub timezone: String,
+    pub timezone: TargetTimezone,
     pub language: String,
 }
-
-
 
 impl AppConfig {
     pub fn load(path: &str) -> Result<Self, AppError> {

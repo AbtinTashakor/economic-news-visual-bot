@@ -1,6 +1,8 @@
 use crate::config::AppConfig;
 use crate::error::AppError;
 use crate::filter::filter_events;
+use crate::normalize::events::normalize_events;
+use crate::normalize::render_model::build_render_events;
 use crate::sources::forexfactory::ForexFactorySource;
 
 pub async fn run() -> Result<(), AppError> {
@@ -18,12 +20,14 @@ pub async fn run() -> Result<(), AppError> {
         return Ok(());
     }
 
-
     // Test events scrap is ok
     println!("Total parsed events: {}", events.len());
 
     for e in &events {
-        println!("Event: {:<5} | {:?} | {:?} | {}", e.currency, e.impact,e.time, e.title);
+        println!(
+            "Event: {:<5} | {:?} | {:?} | {}",
+            e.currency, e.impact, e.time, e.title
+        );
     }
 
     // 4) Apply business filters (impact/currency/...)
@@ -35,6 +39,19 @@ pub async fn run() -> Result<(), AppError> {
     }
 
     println!("Filtered events: {}", filtered.len());
+
+    let normalized = normalize_events(filtered, config.timezone);
+
+    for e in &normalized {
+        println!("{:?} | {:?} | {}", e.currency, e.time, e.title);
+    }
+
+    let render_events = build_render_events(normalized);
+
+    if render_events.is_empty() {
+        println!("No renderable events after deduplication.");
+        return Ok(());
+    }
 
     // 5) Next steps in pipeline (if already implemented in your project):
     // - Render image from `filtered`
