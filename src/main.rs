@@ -8,6 +8,8 @@ mod image;
 mod publisher;
 mod sources;
 mod normalize;
+mod commands;
+mod state;
 
 use crate::app::run;
 
