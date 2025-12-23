@@ -8,6 +8,8 @@ use std::sync::Mutex;
 use teloxide::prelude::*;
 use teloxide::types::InputPollOption;
 
+use crate::state::STATE;
+
 #[derive(Debug, Clone)]
 pub struct PollContext {
     /// Telegram poll id (String form of PollId)
@@ -18,8 +20,7 @@ pub struct PollContext {
     pub selected_indices: Vec<usize>,
 }
 
-static ACTIVE_POLL: Lazy<Mutex<Option<PollContext>>> =
-    Lazy::new(|| Mutex::new(None));
+static ACTIVE_POLL: Lazy<Mutex<Option<PollContext>>> = Lazy::new(|| Mutex::new(None));
 
 /// Sends a Telegram poll with candidate economic events.
 /// Allows multiple answers and stores poll context in memory.
@@ -36,11 +37,7 @@ pub async fn send_events_poll(
     // Telegram requires InputPollOption, not String
     let options: Vec<InputPollOption> = events
         .iter()
-        .map(|e| {
-            InputPollOption::new(
-                format!("{} {} — {}", e.currency, e.title, e.time),
-            )
-        })
+        .map(|e| InputPollOption::new(format!("{} {} — {}", e.currency, e.title, e.time)))
         .collect();
 
     let msg = cfg
@@ -61,9 +58,10 @@ pub async fn send_events_poll(
         .poll()
         .ok_or_else(|| AppError::Publisher("SendPoll response missing poll".into()))?;
 
-    let mut ctx = ACTIVE_POLL.lock().unwrap();
-    *ctx = Some(PollContext {
-        poll_id: poll.id.to_string(), // PollId -> String
+    let mut state = STATE.lock().unwrap();
+
+    state.poll = Some(PollContext {
+        poll_id: poll.id.to_string(),
         options: events,
         selected_indices: Vec::new(),
     });
@@ -71,38 +69,37 @@ pub async fn send_events_poll(
     Ok(())
 }
 
-/// Records poll answers (option indices) for the active poll.
-/// Should be called from poll_answer update handler.
 pub fn handle_poll_answer(poll_id: &str, option_indices: &[u32]) {
-    let mut ctx = ACTIVE_POLL.lock().unwrap();
+    let mut state = STATE.lock().unwrap();
 
-    if let Some(active) = ctx.as_mut() {
-        if active.poll_id == poll_id {
-            active.selected_indices = option_indices
-                .iter()
-                .map(|&i| i as usize)
-                .collect();
-        }
+    let Some(active_poll) = state.poll.as_mut() else {
+        return; // no active poll
+    };
+
+    if active_poll.poll_id != poll_id {
+        return; // old or unrelated poll
     }
+
+    active_poll.selected_indices = option_indices.iter().map(|&i| i as usize).collect();
+
+    println!("Poll updated: selected {:?}", active_poll.selected_indices);
 }
 
-/// Returns the RenderEvents selected by admins (based on poll answers).
 pub fn get_selected_events() -> Vec<RenderEvent> {
-    let ctx = ACTIVE_POLL.lock().unwrap();
+    let state = STATE.lock().unwrap();
 
-    if let Some(active) = ctx.as_ref() {
-        active
-            .selected_indices
-            .iter()
-            .filter_map(|&i| active.options.get(i).cloned())
-            .collect()
-    } else {
-        Vec::new()
-    }
+    let Some(active_poll) = state.poll.as_ref() else {
+        return Vec::new();
+    };
+
+    active_poll
+        .selected_indices
+        .iter()
+        .filter_map(|&idx| active_poll.options.get(idx).cloned())
+        .collect()
 }
 
-/// Clears the active poll context (after rendering or on reset).
 pub fn clear_active_poll() {
-    let mut ctx = ACTIVE_POLL.lock().unwrap();
-    *ctx = None;
+    let mut state = STATE.lock().unwrap();
+    state.poll = None;
 }
