@@ -573,6 +573,7 @@ dependencies = [
  "chrono",
  "image",
  "imageproc",
+ "once_cell",
  "reqwest",
  "scraper",
  "serde",

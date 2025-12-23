@@ -1,38 +1,37 @@
 use crate::error::AppError;
-use teloxide::{prelude::*, types::InputFile};
 use std::env;
+use teloxide::prelude::*;
+use teloxide::types::Recipient;
 
-pub async fn send_image(
-    image_path: &str,
-    caption: &str,
-) -> Result<(), AppError> {
+pub mod telegram;
+pub mod telegram_poll;
+
+/// Telegram runtime configuration loaded from environment variables
+#[derive(Debug, Clone)]
+pub struct TelegramConfig {
+    pub bot: Bot,
+    pub recipient: Recipient,
+}
+
+/// Loads Telegram configuration from environment variables
+pub fn load_telegram_config() -> Result<TelegramConfig, AppError> {
     let bot_token = env::var("TELEGRAM_BOT_TOKEN")
         .map_err(|_| AppError::Publisher("Missing TELEGRAM_BOT_TOKEN".into()))?;
 
-    let chat_id_raw = env::var("TELEGRAM_CHAT_ID")
+    let chat_raw = env::var("TELEGRAM_CHAT_ID")
         .map_err(|_| AppError::Publisher("Missing TELEGRAM_CHAT_ID".into()))?;
 
     let bot = Bot::new(bot_token);
 
-    if let Ok(id) = chat_id_raw.parse::<i64>() {
-        // حالت عددی
-        bot.send_photo(ChatId(id), InputFile::file(image_path))
-            .caption(caption.to_string())
-            .send()
-            .await
-            .map_err(|e| AppError::Publisher(e.to_string()))?;
-    } else if chat_id_raw.starts_with('@') {
-        //  نکته مهم: String بده، نه &str
-        bot.send_photo(chat_id_raw, InputFile::file(image_path))
-            .caption(caption.to_string())
-            .send()
-            .await
-            .map_err(|e| AppError::Publisher(e.to_string()))?;
+    let recipient = if let Ok(id) = chat_raw.parse::<i64>() {
+        Recipient::Id(ChatId(id))
+    } else if chat_raw.starts_with('@') {
+        Recipient::ChannelUsername(chat_raw)
     } else {
         return Err(AppError::Publisher(
             "Invalid TELEGRAM_CHAT_ID (must be numeric or @channel)".into(),
         ));
-    }
+    };
 
-    Ok(())
+    Ok(TelegramConfig { bot, recipient })
 }

@@ -2,7 +2,10 @@ use crate::config::AppConfig;
 use crate::error::AppError;
 use crate::filter::filter_events;
 use crate::normalize::events::normalize_events;
+use crate::normalize::priority::select_top_events;
 use crate::normalize::render_model::build_render_events;
+use crate::publisher::load_telegram_config;
+use crate::publisher::telegram_poll::send_events_poll;
 use crate::sources::forexfactory::ForexFactorySource;
 
 pub async fn run() -> Result<(), AppError> {
@@ -52,6 +55,19 @@ pub async fn run() -> Result<(), AppError> {
         println!("No renderable events after deduplication.");
         return Ok(());
     }
+
+    let poll_candidates = select_top_events(render_events, 12);
+
+
+    println!("🧪 Starting Telegram poll test...");
+
+    // 1️⃣ Load Telegram config (bot + recipient)
+    let tg = load_telegram_config()?;
+
+    // 3️⃣ Send poll to Telegram
+    send_events_poll(&tg, poll_candidates).await?;
+
+    println!("✅ Poll sent. Vote in Telegram, then stop program manually.");
 
     // 5) Next steps in pipeline (if already implemented in your project):
     // - Render image from `filtered`
