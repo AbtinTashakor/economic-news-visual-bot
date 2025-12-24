@@ -10,6 +10,7 @@ mod sources;
 mod normalize;
 mod commands;
 mod state;
+mod renderer;
 
 use crate::app::run;
 
