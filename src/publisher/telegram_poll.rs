@@ -47,7 +47,7 @@ pub async fn send_events_poll(
             "📊 Select today’s events for rendering (max 5)",
             options,
         )
-        .is_anonymous(true)
+        .is_anonymous(false)
         .allows_multiple_answers(true)
         .send()
         .await

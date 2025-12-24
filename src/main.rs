@@ -13,10 +13,19 @@ mod state;
 mod renderer;
 
 use crate::app::run;
+use crate::publisher::load_telegram_config;
 
 #[tokio::main]
 async fn main() {
-    if let Err(e) = run().await {
+    let cfg = match load_telegram_config() {
+        Ok(cfg) => cfg,
+        Err(e) => {
+            eprintln!("Failed to load telegram config: {}", e);
+            std::process::exit(1);
+        }
+    };
+
+    if let Err(e) = run(cfg).await {
         eprintln!("Application error: {}", e);
         std::process::exit(1);
     }
