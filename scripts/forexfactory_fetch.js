@@ -2,6 +2,11 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
+// ---- read date argument ----
+const dateArg = process.argv[2] || 'today';
+
+const url = `https://www.forexfactory.com/calendar?day=${dateArg}`;
+
 (async () => {
     const outDir = path.join(__dirname, '..', 'tmp');
     const outFile = path.join(outDir, 'forexfactory.json');
@@ -19,14 +24,14 @@ const path = require('path');
             'Chrome/120.0.0.0 Safari/537.36',
     });
 
+
     const page = await context.newPage();
 
-    await page.goto('https://www.forexfactory.com/calendar?day=today', {
+    await page.goto(url, {
         waitUntil: 'networkidle',
-        timeout: 60000
+        timeout: 60000,
     });
 
-    // صبر کن تا calendar آماده شود
     await page.waitForTimeout(3000);
 
     const calendarState = await page.evaluate(() => {
@@ -35,10 +40,9 @@ const path = require('path');
         return states[firstKey];
     });
 
-    // JS → JSON واقعی
     fs.writeFileSync(outFile, JSON.stringify(calendarState), 'utf8');
 
     await browser.close();
 
-    console.log(`Saved JSON to: ${outFile}`);
+    console.log(`Saved JSON for ${dateArg} → ${outFile}`);
 })();

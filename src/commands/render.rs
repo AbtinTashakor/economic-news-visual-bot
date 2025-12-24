@@ -1,16 +1,16 @@
-use std::path::Path;
 use chrono::Datelike;
+use std::path::Path;
 
 use crate::error::AppError;
-use crate::state::STATE;
+use crate::normalize::render_model::RenderEvent as ModelEvent;
+use crate::publisher::load_telegram_config;
 use crate::publisher::telegram::send_image;
 use crate::publisher::telegram_poll::get_selected_events;
 use crate::renderer::{
     render::render_png,
     types::{RenderEvent as ImgEvent, RenderMeta},
 };
-use crate::normalize::render_model::RenderEvent as ModelEvent;
-use crate::publisher::load_telegram_config;
+use crate::state::STATE;
 
 pub async fn execute_render() -> Result<(), AppError> {
     // 1️⃣ انتخاب رویدادها (poll یا fallback)
@@ -40,21 +40,15 @@ pub async fn execute_render() -> Result<(), AppError> {
     };
 
     // 4️⃣ تبدیل به ورودی renderer
-    let render_events: Vec<ImgEvent> = events
-        .into_iter()
-        .map(model_to_img_event)
-        .collect();
+    let render_events: Vec<ImgEvent> = events.into_iter().map(model_to_img_event).collect();
 
     // 5️⃣ تولید PNG (bytes)
-    let png = render_png(
-        Path::new("assets"),
-        meta,
-        &render_events,
-    )?;
+    let png = render_png(Path::new("assets"), meta, &render_events)?;
 
     // 6️⃣ ذخیره موقت روی دیسک
-    let out_path = "tmp/render.png";
-    std::fs::write(out_path, png)
+    let out_path = format!("tmp/render_{}.png", chrono::Utc::now().timestamp());
+
+    std::fs::write(&out_path, png)
         .map_err(|e| AppError::Image(format!("failed to write render image: {}", e)))?;
 
     // 7️⃣ ارسال به تلگرام (📌 مسیر فایل)
@@ -62,12 +56,7 @@ pub async fn execute_render() -> Result<(), AppError> {
     // 3️⃣ Load Telegram config
     let tg = load_telegram_config()?;
 
-    send_image(
-        &tg,
-        out_path,
-        "Economic Calendar",
-    )
-    .await?;
+    send_image(&tg, &out_path, "Economic Calendar").await?;
 
     Ok(())
 }

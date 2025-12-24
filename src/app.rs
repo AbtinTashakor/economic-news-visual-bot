@@ -1,15 +1,15 @@
 use std::sync::Arc;
 
-use teloxide::dispatching::UpdateFilterExt;
-use teloxide::dptree;
-use teloxide::prelude::*;
-use teloxide::utils::command::BotCommands;
-
 use crate::commands::command::Command;
 use crate::commands::{get::execute_get, poll::execute_poll, render::execute_render};
 use crate::error::AppError;
 use crate::publisher::TelegramConfig;
 use crate::publisher::telegram_poll::handle_poll_answer;
+use chrono::NaiveDate;
+use teloxide::dispatching::UpdateFilterExt;
+use teloxide::dptree;
+use teloxide::prelude::*;
+use teloxide::utils::command::BotCommands;
 
 /// Bot runtime (dispatcher)
 pub async fn run(cfg: TelegramConfig) -> Result<(), AppError> {
@@ -100,23 +100,11 @@ async fn handle_command(text: &str, bot_name: &str, _chat_id: ChatId) {
 
     match cmd {
         Command::Get { date } => {
-            let date = if date.trim().is_empty() {
-                None
-            } else {
-                Some(date)
-            };
+            println!("fetching data for date: {:?}", date);
+            let parsed_date = NaiveDate::parse_from_str(&date, "%m/%d/%Y").ok();
 
-            println!("📥 GET command, date = {:?}", date);
-
-            if let Err(e) = execute_get().await {
-                eprintln!("get failed: {}", e);
-                return;
-            }
-
-            // 🔥 auto poll
-            if let Err(e) = execute_poll().await {
-                eprintln!("auto poll failed: {}", e);
-            }
+            execute_get(parsed_date).await.ok();
+            execute_poll().await.ok();
         }
 
         Command::Poll => {

@@ -1,10 +1,11 @@
 use crate::error::AppError;
-use crate::models::event::EconomicEvent;
-use crate::models::Impact;
 use crate::models::EventTime;
+use crate::models::Impact;
+use crate::models::event::EconomicEvent;
 use chrono::{NaiveDate, NaiveTime};
 use serde::Deserialize;
 use std::{fs, process::Command};
+use chrono::Datelike;
 
 /// ForexFactory source implemented via Playwright (headless Chromium).
 /// The Playwright script writes JSON to: tmp/forexfactory.json
@@ -12,10 +13,10 @@ pub struct ForexFactorySource;
 
 impl ForexFactorySource {
     /// Runs the Playwright script and returns the raw JSON string saved in tmp/forexfactory.json
-    pub async fn fetch_calendar_json(&self) -> Result<String, AppError> {
-        // Run Node script (Playwright)
+    pub async fn fetch_calendar_json(&self, day_slug: &str) -> Result<String, AppError> {
         let status = Command::new("node")
             .arg("scripts/forexfactory_fetch.js")
+            .arg(day_slug)
             .status()
             .map_err(|e| AppError::Scraper(format!("Failed to run node: {e}")))?;
 
@@ -25,7 +26,6 @@ impl ForexFactorySource {
             )));
         }
 
-        // Read generated JSON
         let json = fs::read_to_string("tmp/forexfactory.json")
             .map_err(|e| AppError::Scraper(format!("Failed to read tmp/forexfactory.json: {e}")))?;
 
@@ -38,6 +38,11 @@ impl ForexFactorySource {
             .map_err(|e| AppError::Scraper(format!("serde_json error: {e}")))?;
 
         Ok(calendar_state_to_events(state))
+    }
+
+    pub fn to_forexfactory_slug(date: NaiveDate) -> String {
+        let month = date.format("%b").to_string().to_lowercase();
+        format!("{}{}.{}", month, date.day(), date.year())
     }
 }
 
