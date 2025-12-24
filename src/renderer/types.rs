@@ -14,4 +14,5 @@ pub struct RenderEvent {
     pub currency: String,
     pub time_label: String, // "08:30" | "All Day" | "Tentative"
     pub impact: Impact,
+    
 }
