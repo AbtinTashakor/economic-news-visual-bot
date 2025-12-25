@@ -1,71 +1,76 @@
-# 📊 Economic News Visual Bot
+# 📊 Economic News Visual Bot (Telegram)
 
-A production-ready Rust application that fetches high-impact economic news, filters them based on configurable rules, generates a clean visual summary, and publishes the result to Telegram.
+A **production-ready Telegram bot** written in **Rust** that fetches economic calendar data for a given date, prioritizes events based on admin rules, collects admin feedback via poll, and finally **renders a clean visual summary image** and publishes it to Telegram.
 
 ---
 
 ## 🚀 Overview
 
-**Economic News Visual Bot** is an automated pipeline designed for traders, analysts, and content creators who need **fast, reliable, and visual economic news delivery**.
+**Economic News Visual Bot** automates the daily workflow of economic-news channels:
 
-The system:
-1. Fetches economic events from a data source  
-2. Filters them using configurable business rules  
-3. Renders a shareable image  
-4. Publishes it automatically to Telegram  
+1. Fetch economic events for **today or any requested date**
+2. Apply **business-level prioritization**
+3. Ask the admin (via Telegram poll) which events should be rendered
+4. Generate a **professional visual image**
+5. Publish the result to Telegram automatically
 
-This project is built with **Rust**, focusing on **robustness, type safety, async I/O, and clean architecture**.
+The entire pipeline is **async, resilient, and designed for production use**.
 
 ---
 
-## 🎯 Problem
+## 🎯 What Problem Does It Solve?
 
 Economic calendars are:
 - Text-heavy
-- Not optimized for social media
-- Time-consuming to manually summarize
-- Hard to automate reliably
+- Hard to customize
+- Not suitable for visual content
+- Time-consuming to summarize manually
 
-Traders and channels need **clean, visual, and filtered summaries**, delivered automatically.
-
----
-
-## ✅ Solution
-
-This project provides:
-
-- ⚙️ Config-driven filtering (impact, currency, timezone, language)
-- 🧠 Clear separation of business logic
-- 🖼️ Deterministic image generation
-- 📤 Automated Telegram publishing
-- 🧵 Async networking without blocking
-- 🛡️ Strong error handling (no panics)
+This bot turns raw economic data into **curated, visual, and shareable content** with **admin control in the loop**.
 
 ---
 
-## 🧩 Architecture
+## 🧠 Core Idea
+
+> **Automation with human validation**
+
+Instead of blindly publishing data:
+- The bot prioritizes events
+- The admin confirms selections via poll
+- The final output is rendered exactly as desired
+
+---
+
+## 🔁 High-Level Pipeline
 
 ```
-┌────────────┐
-│   Config   │
-└─────┬──────┘
-      │
-┌─────▼──────┐
-│  Scraper   │
-└─────┬──────┘
-      │
-┌─────▼──────┐
-│   Filter   │
-└─────┬──────┘
-      │
-┌─────▼──────┐
-│  Renderer  │
-└─────┬──────┘
-      │
-┌─────▼──────┐
-│ Publisher  │
-└────────────┘
+/get [date]
+   ↓
+Fetch economic calendar (ForexFactory)
+   ↓
+Filter & prioritize events
+   ↓
+Create Telegram poll (top 10)
+   ↓
+Admin votes
+   ↓
+Auto render selected events
+   ↓
+Send image to Telegram
 ```
+
+---
+
+## ✨ Features
+
+- 📅 Fetch calendar for **today or any date**
+- ⚙️ Config-driven filtering & prioritization
+- 🗳 Admin selection via Telegram poll
+- 🖼 Template-based image rendering
+- 📤 Automatic Telegram publishing
+- 🔁 Resilient startup (retry on Telegram failure)
+- 🧠 In-memory daily state management
+- 🧼 Clean error handling (no panics)
 
 ---
 
@@ -74,9 +79,10 @@ This project provides:
 - **Language:** Rust
 - **Async Runtime:** Tokio
 - **Telegram API:** Teloxide
-- **Image Rendering:** image, imageproc, ab_glyph
+- **Rendering:** image, imageproc, ab_glyph
+- **Scraping:** Playwright (Node.js)
 - **Config:** YAML
-- **Error Handling:** Result-based, no panics
+- **State:** In-memory (daily cache)
 
 ---
 
@@ -86,13 +92,32 @@ This project provides:
 src/
 ├── app.rs
 ├── main.rs
-├── config/
-├── scraper/
+├── commands/
+├── sources/
 ├── filter/
-├── image/
+├── normalize/
+├── renderer/
 ├── publisher/
+├── state.rs
 ├── models/
 └── error.rs
+scripts/
+└── forexfactory_fetch.js
+assets/
+└── templates & icons
+```
+
+---
+
+## ▶️ Usage
+
+### Telegram Commands
+
+```
+/get
+/ get 12/2/2025
+/poll
+/render
 ```
 
 ---
@@ -110,56 +135,31 @@ language: En
 
 ---
 
-## ▶️ How to Run
-
-### Requirements
-- Rust (stable)
-- Telegram Bot Token
-- Telegram Chat ID or Channel Username
-
-### Environment Variables
+## 🔐 Environment Variables
 
 ```
-TELEGRAM_BOT_TOKEN=your_bot_token_here
-TELEGRAM_CHAT_ID=@your_channel_or_numeric_id
-```
-
-### Run
-
-```
-cargo run
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_CHAT_ID=@your_channel_or_chat_id
 ```
 
 ---
 
 ## 🖼 Output
 
-The bot generates a visual summary image and sends it directly to Telegram.
+The final output is a **PNG image** generated from a fixed template:
+- Header with date & timezone
+- List of selected events
+- Impact icons
 
 ---
 
-## 🔐 Error Handling Philosophy
+## 📄 License
 
-- No panic or unwrap in application logic
-- Errors are propagated and logged cleanly
-- Network failures handled gracefully
+This project is proprietary software.
 
----
+The source code is provided for review and evaluation purposes only.
+Any use, reproduction, modification, distribution, or commercial use of this project,
+in whole or in part, without explicit written permission from the author
+is strictly prohibited.
 
-## 🧠 What This Project Demonstrates
-
-- Async vs sync decision-making
-- Clean architecture and separation of concerns
-- Type-safe API integration
-- Real-world external service integration
-- Production-minded Rust design
-
----
-
-## 🔮 Future Improvements
-
-- Multiple data sources
-- Instagram / Twitter publishing
-- Scheduling support
-- Multi-language rendering
-- Retry and backoff strategies
+See the LICENSE file for full details.
