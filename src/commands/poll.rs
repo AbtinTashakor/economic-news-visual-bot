@@ -1,9 +1,8 @@
 use crate::error::AppError;
 use crate::normalize::priority::select_top_events;
-use crate::publisher::load_telegram_config;
+
 use crate::publisher::telegram_poll::send_events_poll;
 use crate::state::STATE;
-use chrono::Datelike;
 use crate::publisher::TELEGRAM;
 
 pub async fn execute_poll() -> Result<(), AppError> {

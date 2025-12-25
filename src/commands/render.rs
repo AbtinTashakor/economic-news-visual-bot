@@ -1,9 +1,8 @@
-use chrono::Datelike;
+use crate::publisher::TELEGRAM;
 use std::path::Path;
 
 use crate::error::AppError;
 use crate::normalize::render_model::RenderEvent as ModelEvent;
-use crate::publisher::{TELEGRAM, load_telegram_config};
 use crate::publisher::telegram::send_image;
 use crate::publisher::telegram_poll::get_selected_events;
 use crate::renderer::{

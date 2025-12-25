@@ -2,8 +2,6 @@ use crate::error::AppError;
 use crate::normalize::render_model::RenderEvent;
 use crate::publisher::TelegramConfig;
 
-use once_cell::sync::Lazy;
-use std::sync::Mutex;
 
 use teloxide::prelude::*;
 use teloxide::types::InputPollOption;
@@ -20,7 +18,7 @@ pub struct PollContext {
     pub selected_indices: Vec<usize>,
 }
 
-static ACTIVE_POLL: Lazy<Mutex<Option<PollContext>>> = Lazy::new(|| Mutex::new(None));
+//static ACTIVE_POLL: Lazy<Mutex<Option<PollContext>>> = Lazy::new(|| Mutex::new(None));
 
 /// Sends a Telegram poll with candidate economic events.
 /// Allows multiple answers and stores poll context in memory.
@@ -38,7 +36,7 @@ pub async fn send_events_poll(
     // Telegram requires InputPollOption, not String
     let options: Vec<InputPollOption> = events
         .iter()
-        .map(|e| InputPollOption::new(format!("{} {} — {}", e.currency, e.title, e.time)))
+        .map(|e| InputPollOption::new(format!("{}|{:?}|{} — {}", e.currency,e.impact, e.title, e.time)))
         .collect();
 
     let question = format!("📊 Select events for {} (max 6)", date_label);
@@ -99,9 +97,4 @@ pub fn get_selected_events() -> Vec<RenderEvent> {
         .iter()
         .filter_map(|&idx| active_poll.options.get(idx).cloned())
         .collect()
-}
-
-pub fn clear_active_poll() {
-    let mut state = STATE.lock().unwrap();
-    state.poll = None;
 }

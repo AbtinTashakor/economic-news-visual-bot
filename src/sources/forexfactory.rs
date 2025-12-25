@@ -5,7 +5,7 @@ use crate::models::event::EconomicEvent;
 use chrono::{NaiveDate, NaiveTime};
 use serde::Deserialize;
 use std::{fs, process::Command};
-use chrono::Datelike;
+
 
 /// ForexFactory source implemented via Playwright (headless Chromium).
 /// The Playwright script writes JSON to: tmp/forexfactory.json
@@ -40,10 +40,10 @@ impl ForexFactorySource {
         Ok(calendar_state_to_events(state))
     }
 
-    pub fn to_forexfactory_slug(date: NaiveDate) -> String {
-        let month = date.format("%b").to_string().to_lowercase();
-        format!("{}{}.{}", month, date.day(), date.year())
-    }
+    // pub fn to_forexfactory_slug(date: NaiveDate) -> String {
+    //     let month = date.format("%b").to_string().to_lowercase();
+    //     format!("{}{}.{}", month, date.day(), date.year())
+    // }
 }
 
 /* ----------------------------- DTOs (site JSON) ----------------------------- */

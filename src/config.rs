@@ -14,7 +14,7 @@ pub struct AppConfig {
     pub impact: Vec<String>,
     pub currency: Vec<String>,
     pub timezone: TargetTimezone,
-    pub language: String,
+    // pub language: String,
 }
 
 impl AppConfig {

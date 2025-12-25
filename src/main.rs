@@ -3,12 +3,10 @@ mod commands;
 mod config;
 mod error;
 mod filter;
-mod image;
 mod models;
 mod normalize;
 mod publisher;
 mod renderer;
-mod scraper;
 mod sources;
 mod state;
 
