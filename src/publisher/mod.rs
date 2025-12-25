@@ -1,5 +1,7 @@
 use crate::error::AppError;
 use std::env;
+use std::sync::Arc;
+use once_cell::sync::Lazy;
 use teloxide::prelude::*;
 use teloxide::types::Recipient;
 
@@ -35,3 +37,9 @@ pub fn load_telegram_config() -> Result<TelegramConfig, AppError> {
 
     Ok(TelegramConfig { bot, recipient })
 }
+
+pub static TELEGRAM: Lazy<Arc<TelegramConfig>> = Lazy::new(|| {
+    let cfg = load_telegram_config()
+        .expect("Failed to load Telegram config");
+    Arc::new(cfg)
+});

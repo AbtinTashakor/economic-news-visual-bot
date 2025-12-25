@@ -3,7 +3,9 @@ use std::sync::Arc;
 use crate::commands::command::Command;
 use crate::commands::{get::execute_get, poll::execute_poll, render::execute_render};
 use crate::error::AppError;
+use crate::publisher::TELEGRAM;
 use crate::publisher::TelegramConfig;
+use crate::publisher::telegram::send_message;
 use crate::publisher::telegram_poll::handle_poll_answer;
 use chrono::NaiveDate;
 use teloxide::dispatching::UpdateFilterExt;
@@ -102,9 +104,22 @@ async fn handle_command(text: &str, bot_name: &str, _chat_id: ChatId) {
         Command::Get { date } => {
             println!("fetching data for date: {:?}", date);
             let parsed_date = NaiveDate::parse_from_str(&date, "%m/%d/%Y").ok();
+            let status = send_message(
+                &TELEGRAM,
+                "⏳ Fetching economic calendar data… Please wait.",
+            )
+            .await
+            .ok();
 
             execute_get(parsed_date).await.ok();
             execute_poll().await.ok();
+
+            if let Some(msg) = status {
+                let _ = TELEGRAM
+                    .bot
+                    .delete_message(TELEGRAM.recipient.clone(), msg.id)
+                    .await;
+            }
         }
 
         Command::Poll => {

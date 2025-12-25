@@ -3,7 +3,7 @@ use std::path::Path;
 
 use crate::error::AppError;
 use crate::normalize::render_model::RenderEvent as ModelEvent;
-use crate::publisher::load_telegram_config;
+use crate::publisher::{TELEGRAM, load_telegram_config};
 use crate::publisher::telegram::send_image;
 use crate::publisher::telegram_poll::get_selected_events;
 use crate::renderer::{
@@ -53,10 +53,9 @@ pub async fn execute_render() -> Result<(), AppError> {
 
     // 7️⃣ ارسال به تلگرام (📌 مسیر فایل)
 
-    // 3️⃣ Load Telegram config
-    let tg = load_telegram_config()?;
 
-    send_image(&tg, &out_path, "Economic Calendar").await?;
+
+    send_image(&TELEGRAM, &out_path, "Economic Calendar").await?;
 
     Ok(())
 }

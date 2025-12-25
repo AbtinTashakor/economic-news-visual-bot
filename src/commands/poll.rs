@@ -4,6 +4,7 @@ use crate::publisher::load_telegram_config;
 use crate::publisher::telegram_poll::send_events_poll;
 use crate::state::STATE;
 use chrono::Datelike;
+use crate::publisher::TELEGRAM;
 
 pub async fn execute_poll() -> Result<(), AppError> {
     // 1️⃣ Read cache
@@ -32,8 +33,6 @@ pub async fn execute_poll() -> Result<(), AppError> {
         return Err(AppError::Publisher("No events available for poll.".into()));
     }
 
-    // 3️⃣ Load Telegram config
-    let tg = load_telegram_config()?;
 
     // 4️⃣ Clear previous poll (if any)
     {
@@ -52,7 +51,7 @@ pub async fn execute_poll() -> Result<(), AppError> {
     };
 
     // 5️⃣ Send poll
-    send_events_poll(&tg, poll_candidates, &date_label).await?;
+    send_events_poll(&TELEGRAM, poll_candidates, &date_label).await?;
 
     println!("✅ Poll created from cached daily events");
 
