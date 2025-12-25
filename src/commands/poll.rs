@@ -3,6 +3,7 @@ use crate::normalize::priority::select_top_events;
 use crate::publisher::load_telegram_config;
 use crate::publisher::telegram_poll::send_events_poll;
 use crate::state::STATE;
+use chrono::Datelike;
 
 pub async fn execute_poll() -> Result<(), AppError> {
     // 1️⃣ Read cache
@@ -13,7 +14,7 @@ pub async fn execute_poll() -> Result<(), AppError> {
             None => {
                 return Err(AppError::Publisher(
                     "No cached news found. Run /get first.".into(),
-                ))
+                ));
             }
         }
     };
@@ -24,13 +25,11 @@ pub async fn execute_poll() -> Result<(), AppError> {
         ));
     }
 
-    // 2️⃣ Select top 12 by priority
-    let poll_candidates = select_top_events(cached_events, 12);
+    // 2️⃣ Select top 10 by priority
+    let poll_candidates = select_top_events(cached_events, 10);
 
     if poll_candidates.is_empty() {
-        return Err(AppError::Publisher(
-            "No events available for poll.".into(),
-        ));
+        return Err(AppError::Publisher("No events available for poll.".into()));
     }
 
     // 3️⃣ Load Telegram config
@@ -42,8 +41,18 @@ pub async fn execute_poll() -> Result<(), AppError> {
         state.poll = None;
     }
 
+    let date_label = {
+        let state = STATE.lock().unwrap();
+        let cache = state
+            .daily_cache
+            .as_ref()
+            .ok_or_else(|| AppError::Publisher("no daily cache found".into()))?;
+
+        cache.date.format("%A, %B %d, %Y").to_string()
+    };
+
     // 5️⃣ Send poll
-    send_events_poll(&tg, poll_candidates).await?;
+    send_events_poll(&tg, poll_candidates, &date_label).await?;
 
     println!("✅ Poll created from cached daily events");
 

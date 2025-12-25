@@ -27,6 +27,7 @@ static ACTIVE_POLL: Lazy<Mutex<Option<PollContext>>> = Lazy::new(|| Mutex::new(N
 pub async fn send_events_poll(
     cfg: &TelegramConfig,
     events: Vec<RenderEvent>,
+    date_label: &str,
 ) -> Result<(), AppError> {
     if events.is_empty() {
         return Err(AppError::Publisher(
@@ -40,11 +41,12 @@ pub async fn send_events_poll(
         .map(|e| InputPollOption::new(format!("{} {} — {}", e.currency, e.title, e.time)))
         .collect();
 
+    let question = format!("📊 Select events for {} (max 6)", date_label);
     let msg = cfg
         .bot
         .send_poll(
             cfg.recipient.clone(),
-            "📊 Select today’s events for rendering (max 5)",
+            question,
             options,
         )
         .is_anonymous(false)
