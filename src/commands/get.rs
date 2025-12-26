@@ -1,7 +1,11 @@
 use chrono::{Local, NaiveDate};
 
-use crate::config::AppConfig;
 use crate::error::AppError;
+use crate::publisher::TELEGRAM;
+use crate::publisher::telegram::send_message;
+
+use crate::config::AppConfig;
+
 use crate::filter::filter_events;
 use crate::normalize::events::normalize_events;
 use crate::normalize::render_model::build_render_events;
@@ -28,6 +32,9 @@ pub async fn execute_get(date: Option<NaiveDate>) -> Result<(), AppError> {
 
     if events.is_empty() {
         println!("No economic events found from ForexFactory.");
+
+        send_message(&TELEGRAM, format!("No economic events found from ForexFactory for {}", target_date)).await?;
+
         return Ok(());
     }
 
@@ -38,6 +45,9 @@ pub async fn execute_get(date: Option<NaiveDate>) -> Result<(), AppError> {
 
     if filtered.is_empty() {
         println!("No events matched the configured filters.");
+
+        send_message(&TELEGRAM, format!("No events matched the configured filters for {}", target_date)).await?;
+
         return Ok(());
     }
 
@@ -51,6 +61,9 @@ pub async fn execute_get(date: Option<NaiveDate>) -> Result<(), AppError> {
 
     if render_events.is_empty() {
         println!("No renderable events after deduplication.");
+
+         send_message(&TELEGRAM, format!("No renderable events after deduplication for{}", target_date)).await?;
+
         return Ok(());
     }
 
