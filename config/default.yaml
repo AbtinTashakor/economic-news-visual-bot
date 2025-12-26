@@ -2,12 +2,18 @@ impact:
   - high
   - medium
   - low
+  - holiday
 
 currency:
   - USD
   - EUR
   - GBP
   - JPY
+  - AUD
+  - CAD
+  - CHF
+  - NZD
+  - CNY
 
 timezone: NY
 language: fa

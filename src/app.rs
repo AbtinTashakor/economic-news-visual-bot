@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use crate::commands::command::Command;
 use crate::commands::{get::execute_get, poll::execute_poll, render::execute_render};
 use crate::error::AppError;
@@ -8,10 +6,12 @@ use crate::publisher::TelegramConfig;
 use crate::publisher::telegram::send_message;
 use crate::publisher::telegram_poll::handle_poll_answer;
 use chrono::NaiveDate;
+use std::sync::Arc;
 use teloxide::dispatching::UpdateFilterExt;
 use teloxide::dptree;
 use teloxide::prelude::*;
 use teloxide::utils::command::BotCommands;
+use tokio::time::{Duration, timeout};
 
 /// Bot runtime (dispatcher)
 pub async fn run(cfg: TelegramConfig) -> Result<(), AppError> {
@@ -104,13 +104,20 @@ async fn handle_command(text: &str, bot_name: &str, _chat_id: ChatId) {
         Command::Get { date } => {
             println!("fetching data for date: {:?}", date);
             let parsed_date = NaiveDate::parse_from_str(&date, "%m/%d/%Y").ok();
-            let status = send_message(
-                &TELEGRAM,
-                "⏳ Fetching economic calendar data… Please wait.",
+            
+            
+            let status = timeout(
+                Duration::from_secs(10),
+                send_message(
+                    &TELEGRAM,
+                    "⏳ Fetching economic calendar data… Please wait.",
+                ),
             )
             .await
-            .ok();
-
+            .ok()
+            .and_then(|r| r.ok());
+            
+            
             execute_get(parsed_date).await.ok();
             execute_poll().await.ok();
 

@@ -49,6 +49,8 @@ pub fn render_png(
         let icon = match event.impact {
             Impact::High => &assets.impact_high,
             Impact::Medium => &assets.impact_medium,
+            Impact::Low => &assets.impact_low,
+            Impact::Holiday => &assets.impact_holiday,
             _ => &assets.impact_low,
         };
 

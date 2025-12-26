@@ -9,6 +9,7 @@ pub struct RenderAssets {
     pub impact_high: DynamicImage,
     pub impact_medium: DynamicImage,
     pub impact_low: DynamicImage,
+    pub impact_holiday: DynamicImage,
 }
 
 impl RenderAssets {
@@ -17,6 +18,7 @@ impl RenderAssets {
         let high_path = assets_dir.join("impact_high.png");
         let med_path = assets_dir.join("impact_medium.png");
         let low_path = assets_dir.join("impact_low.png");
+        let holiday_path = assets_dir.join("impact_holiday.png");
 
         let template = image::open(&template_path)
             .map_err(|e| AppError::Image(format!("failed to open template {:?}: {}", template_path, e)))?;
@@ -30,11 +32,15 @@ impl RenderAssets {
         let impact_low = image::open(&low_path)
             .map_err(|e| AppError::Image(format!("failed to open impact_low {:?}: {}", low_path, e)))?;
 
+        let impact_holiday = image::open(&holiday_path)
+            .map_err(|e| AppError::Image(format!("failed to open impact_holiday {:?}: {}", holiday_path, e)))?;
+
         Ok(Self {
             template,
             impact_high,
             impact_medium,
             impact_low,
+            impact_holiday,
         })
     }
 }

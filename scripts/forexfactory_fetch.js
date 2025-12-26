@@ -13,7 +13,7 @@ const url = `https://www.forexfactory.com/calendar?day=${dateArg}`;
 
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
-    const browser = await chromium.launch({ headless: true });
+    const browser = await chromium.launch({ headless: false });
 
     const context = await browser.newContext({
         locale: 'en-US',
