@@ -153,13 +153,5 @@ The final output is a **PNG image** generated from a fixed template:
 
 ---
 
-## 📄 License
-
-This project is proprietary software.
-
-The source code is provided for review and evaluation purposes only.
-Any use, reproduction, modification, distribution, or commercial use of this project,
-in whole or in part, without explicit written permission from the author
-is strictly prohibited.
-
-See the LICENSE file for full details.
+## License
+This project is licensed under the MIT License.
